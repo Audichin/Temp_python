@@ -7,7 +7,7 @@ def test_ascii_change_1() -> None:
     """test if the ascii_change function works correctly.
     """
     text = "abc"
-    result = ascii_change("abc", new_dict, 0)
+    result = ascii_change("abc", 0)
     expected = "@"
     assert result == expected
 
@@ -15,7 +15,7 @@ def test_ascii_change_2() -> None:
     """test if the ascii_change function works correctly.
     """
     text = "ian"
-    result = ascii_change('ian', new_dict, 0)
+    result = ascii_change('ian', 0)
     expected = "|"
     print(f'got = {result}, expected = {expected}')
     assert result == expected

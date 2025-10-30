@@ -76,16 +76,19 @@ def is_palindrome(morse_code: str) -> int:
     # 1. reverse the morse_code string and store into a variable
     # 2. if the morse_code equals to the reversed string, it is a palindrome and return 1
     # 3. return 0 otherwise
-    new_code: str
+    new_code = []
     if morse_code == "":
         return 0
-    else:
+    elif morse_code != "":
         for char in morse_code:
-            new_code = morse_code[:-1]
-            del morse_code[:-1]
+            # new_code.append(morse_code[len(morse_code)-1])
+            # morse_code = morse_code[:-1]
+            new_code = morse_code[-1::-1]
+            # print(f'new_code = {new_code}', file=sys.stderr)
+            # print(f'morse_code = {morse_code}', file=sys.stderr)
     if morse_code == new_code:
         return 1
-    else: 
+    else:
         return 0
 
 
@@ -100,13 +103,14 @@ def convert_to_morse(english: str) -> str:
     """
     morse_code = ''
     # Algorithm steps:
-    # For ecah character in english,
+    # For each character in english,
     #   find the morse code of the character using ENG_TO_MORSE dictionary
     #   concatenate morse code to morse_code variable if key exists
     #   ignore the key/character if it doesn't exist in the dictionary
     # FIXED3: implement the above algorithm
     for c in english:
-        morse_code += ENG_TO_MORSE.get(c)
+        if c in ENG_TO_MORSE:
+            morse_code += ENG_TO_MORSE.get(c)
     return morse_code
 
 

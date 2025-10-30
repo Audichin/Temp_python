@@ -27,7 +27,7 @@ def test_convert_to_morse3() -> None:
         Tests convert_to_morse function.
     """
     actual_ans = morsecodepalindromes.convert_to_morse('GMRS')
-    expected_ans = '--......-.-....'
+    expected_ans = '--.--.-....'
     assert actual_ans == expected_ans
 
 def test_convert_to_morse4() -> None:

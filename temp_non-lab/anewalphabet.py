@@ -30,8 +30,8 @@ new_dict = {"a": "@",
             "j": "_|",
             "k": "|<",
             "l": "1",
-            "m": "[]\/[]",
-            "n": "[]\[]",
+            "m": "[]\\/[]",
+            "n": "[]\\[]",
             "o": "0",
             "p": "|D",
             "q": "(,)",
@@ -39,32 +39,33 @@ new_dict = {"a": "@",
             "s": "$",
             "t": "']['",
             "u": "|_|",
-            "v": "\/",
-            "w": "\/\/",
+            "v": "\\/",
+            "w": "\\/\\/",
             "x": "}{",
             "y": "`/",
-            "z": "2",
-            ",": ",",
-            ".": ".",
-            "?": "?",
-            "!": "!",
-            "'": "'"}
+            "z": "2"}
 
 def main():
-
     translation = []
-
-    user_data = input()
+    user_data = input().strip()
+    user_data = lowercase(user_data)
     if len(user_data) < 10000:
         for i in range(0, len(user_data)):
-            translation.append(ascii_change(lowercase(user_data), new_dict, i))
+            translation.append(ascii_change(user_data, i))
     print_string(translation)
         
 
 
-def ascii_change(text: str, trans: dict, text_placement: int) -> str:
+def ascii_change(text: str, text_placement: int) -> str:
     # print(f'Changing {text[text_placement]} to {trans.get(text[text_placement])}')
-    return trans.get(text[text_placement])
+    if ord(text[text_placement]) >= 32 and ord(text[text_placement]) <= 64:
+        return text[text_placement]
+    if ord(text[text_placement]) >= 91 and ord(text[text_placement]) <= 96:
+        return text[text_placement]
+    if ord(text[text_placement]) >= 123 and ord(text[text_placement]) <= 126:
+        return text[text_placement]
+    
+    return new_dict.get(text[text_placement])
         
 
 def lowercase(text: str) -> str:
