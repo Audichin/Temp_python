@@ -21,7 +21,7 @@ Algorithm steps:
 
 import sys
 from typing import Dict
-
+import string
 
 def sort_cups(cups: dict) -> list:
     """Sorts the cups dict based on keys and returns the color.
@@ -35,10 +35,9 @@ def sort_cups(cups: dict) -> list:
     # sort the cups based on keys and get a sorted dict
     sorted_keys = sorted(cups)
     ans = []
-    # FIXME 4: traverse through sorted_keys and add the corresponding value to ans
-    for i in len(sorted_keys):
-        ans += strip(min(int, sorted_keys=int.get))
-
+    # FIXED4: traverse through sorted_keys and add the corresponding value to ans
+    for i in range(len(sorted_keys)):
+        ans.append(cups[sorted_keys[i]])
     return ans
 
 
@@ -50,27 +49,25 @@ def main() -> None:
     n = int(sys.stdin.readline().strip())
     # FIXED1: initialize cups as an empty dictionary
     cups = {}
-    cups: Dict[int, str] = None
+    cups: Dict[int, str] = {}
     for _ in range(n):
         # FIXED2 : read each line and split it into two variables
-        val1, val2 = sys.stdin.readline().strip()
+        line = sys.stdin.readline().strip()
+        val1, val2 = line.split()
+        
         # FIXED3 : add radius (int) as a key and color as a value to cups
         # Note. if the first variable is number, it must be diameter.
         # convert it into a radius before adding it to the cups.
-        if isdigit(val1):
+        if str.isdigit(val1):
             radius = ((int(val1))/2)
             color = str(val2)
-            cups = radius, color
-
-            cups.update({int: radius, str: color})
+            cups[radius] = color
         else:
             radius = int(val2)
             color = str(val1)
-
-            cups.update({int: radius, str: color})
+            cups[radius] = color
 
     ans = sort_cups(cups)
-    print(f'{ans=}', file=sys.stderr)
     # FIXED5: print the colors in ans one line at a time
     for i in ans:
         print(i, end = "\n")
