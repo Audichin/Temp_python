@@ -3,10 +3,15 @@
 My project about an app managing Pokémon cards in binders:
 
 1) Handle user data:
+
     a) Manage multiple binders
+   
     b) Manage pictures in a nice UI layout like a binder
+   
     c) Manage location in virtual binder relative to real binder
+   
     d) Manage data on the card to allow for a search function
+
 3) Allow the user to change the location of where cards are located and the data they have
 4) Provide a search for a card along with their data
 5) A help area to understand the app and cards for new people to the TCG
