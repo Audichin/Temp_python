@@ -122,10 +122,15 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Widget _buildPreview() {
-    final aspectRatio = _controller!.value.aspectRatio;
-    if (aspectRatio == 0) {
+    final controllerAspectRatio = _controller!.value.aspectRatio;
+    if (controllerAspectRatio == 0) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    // The camera plugin reports aspect ratio in the sensor's native
+    // landscape orientation. Inverting it produces the portrait framing
+    // users expect on a phone camera screen.
+    final previewAspectRatio = 1 / controllerAspectRatio;
 
     return Center(
       child: ClipRRect(
@@ -133,7 +138,7 @@ class _CameraPageState extends State<CameraPage> {
         child: ColoredBox(
           color: Colors.black,
           child: AspectRatio(
-            aspectRatio: aspectRatio,
+            aspectRatio: previewAspectRatio,
             child: CameraPreview(_controller!),
           ),
         ),
@@ -165,10 +170,10 @@ class _CameraPageState extends State<CameraPage> {
           child: Center(
             child: Column(
               children: [
-              Expanded(
-                child: FutureBuilder<void>(
-                  future: _initializeControllerFuture,
-                  builder: (context, snapshot) {
+                Expanded(
+                  child: FutureBuilder<void>(
+                    future: _initializeControllerFuture,
+                    builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         return _buildPreview();
                       }
@@ -176,62 +181,62 @@ class _CameraPageState extends State<CameraPage> {
                       return const Center(child: CircularProgressIndicator());
                     },
                   ),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: Text(
-                  _cameraLabel(),
-                  style: Theme.of(context).textTheme.titleMedium,
-                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_cameras.length > 1)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 24),
-                      child: IconButton.filledTonal(
-                        tooltip: 'Switch camera',
-                        onPressed: _switchCamera,
-                        icon: const Icon(Icons.cameraswitch_outlined),
-                      ),
-                    ),
-                  GestureDetector(
-                    onTap: _capturing ? null : _capture,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 150),
-                      opacity: _capturing ? 0.6 : 1,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: const BoxDecoration(
-                          color: Colors.black,
-                          shape: BoxShape.circle,
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    _cameraLabel(),
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_cameras.length > 1)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 24),
+                        child: IconButton.filledTonal(
+                          tooltip: 'Switch camera',
+                          onPressed: _switchCamera,
+                          icon: const Icon(Icons.cameraswitch_outlined),
                         ),
-                        padding: const EdgeInsets.all(5),
+                      ),
+                    GestureDetector(
+                      onTap: _capturing ? null : _capture,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 150),
+                        opacity: _capturing ? 0.6 : 1,
                         child: Container(
+                          width: 80,
+                          height: 80,
                           decoration: const BoxDecoration(
-                            color: Colors.white,
+                            color: Colors.black,
                             shape: BoxShape.circle,
                           ),
-                          child: _capturing
-                              ? const Padding(
-                                  padding: EdgeInsets.all(22),
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                  ),
-                                )
-                              : null,
+                          padding: const EdgeInsets.all(5),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: _capturing
+                                ? const Padding(
+                                    padding: EdgeInsets.all(22),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3,
+                                    ),
+                                  )
+                                : null,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
