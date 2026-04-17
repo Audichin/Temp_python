@@ -1,15 +1,15 @@
 # pokesort
 
-My project about an app managing pokemon cards in binders:
+My project about an app managing Pokémon cards in binders:
 
-1) Be able to handle user log in (still figuring out if I want to handle everything locally or talk via server)
-2) Handle user data:
-    a) Manage pictures
-    b) Manage location in virtual binder relative to real binder
-    c) Manage data on card to allow for search function
-3) Allow user to change location of where cards are located
-4) Provide autosaving and undo (optional but prefer to add)
-
+1) Handle user data:
+    a) Manage multiple binders
+    b) Manage pictures in a nice UI layout like a binder
+    c) Manage location in virtual binder relative to real binder
+    d) Manage data on the card to allow for a search function
+3) Allow the user to change the location of where cards are located and the data they have
+4) Provide a search for a card along with their data
+5) A help area to understand the app and cards for new people to the TCG
 
 ## Getting Started
 
@@ -23,3 +23,8 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## DOWNLOAD HERE
+Compatibility - Android 7 and above confirmed, older versions are unknown
+
+Where to download - [Go here](https://mega.nz/folder/HF0G1SLQ#OUO7eouL38l2masUqADCrw) and download the APK, allow unknown sources, and allow any pop-ups. This app only supports photo capture; audio and video are not required.
