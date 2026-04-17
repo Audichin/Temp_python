@@ -28,7 +28,7 @@
 | Name        | Pokesort - public presentation                                                                                                      |
 | Description | My project for the class, to sort, look up, and find where Pokémon cards are in your binders!                                       |
 | Due Date    | 2/25/26                                                                                                                             |
-| Status      | In progress                                                                                                                         |
+| Status      | Downloadable (see read me)                                                                                                          |
 | Location    | https://github.com/Audichin/CS337-Imooney/tree/main/pokesort                                                                        |
 | Self Grade  | 100/100                                                                                                                             |
-| Notes       | This is going to be tough, learning Dart and Flutter and how to get it to run along with learning how to make an app out of it.     |
+| Notes       | This was fun, but I dislike its vibecode creation. I wish I could have learned it, but that would have taken too long for the span of what I wanted to get done. Overall, happy still. Free download on Mega.     |
