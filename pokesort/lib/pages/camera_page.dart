@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 
@@ -14,6 +16,7 @@ class _CameraPageState extends State<CameraPage> {
   List<CameraDescription> _cameras = [];
   int _selectedCameraIndex = 0;
   bool _capturing = false;
+  String? _capturedImagePath;
 
   @override
   void initState() {
@@ -110,7 +113,10 @@ class _CameraPageState extends State<CameraPage> {
 
       if (!mounted) return;
 
-      Navigator.pop(context, image.path);
+      setState(() {
+        _capturedImagePath = image.path;
+        _capturing = false;
+      });
     } catch (e) {
       debugPrint('$e');
       if (mounted) {
@@ -119,6 +125,20 @@ class _CameraPageState extends State<CameraPage> {
         });
       }
     }
+  }
+
+  void _retakePhoto() {
+    setState(() {
+      _capturedImagePath = null;
+      _capturing = false;
+    });
+  }
+
+  void _useCapturedPhoto() {
+    final imagePath = _capturedImagePath;
+    if (imagePath == null) return;
+
+    Navigator.pop(context, imagePath);
   }
 
   Widget _buildPreview() {
@@ -143,6 +163,41 @@ class _CameraPageState extends State<CameraPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCapturedPhotoReview() {
+    final imagePath = _capturedImagePath;
+    if (imagePath == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.file(
+                File(imagePath),
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        FilledButton.icon(
+          onPressed: _useCapturedPhoto,
+          icon: const Icon(Icons.check_circle_outline),
+          label: const Text('Use Photo'),
+        ),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: _retakePhoto,
+          icon: const Icon(Icons.refresh),
+          label: const Text('Retake Photo'),
+        ),
+      ],
     );
   }
 
@@ -171,70 +226,77 @@ class _CameraPageState extends State<CameraPage> {
             child: Column(
               children: [
                 Expanded(
-                  child: FutureBuilder<void>(
-                    future: _initializeControllerFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return _buildPreview();
-                      }
+                  child: _capturedImagePath != null
+                      ? _buildCapturedPhotoReview()
+                      : FutureBuilder<void>(
+                          future: _initializeControllerFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              return _buildPreview();
+                            }
 
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: Text(
-                    _cameraLabel(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_cameras.length > 1)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 24),
-                        child: IconButton.filledTonal(
-                          tooltip: 'Switch camera',
-                          onPressed: _switchCamera,
-                          icon: const Icon(Icons.cameraswitch_outlined),
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
                         ),
-                      ),
-                    GestureDetector(
-                      onTap: _capturing ? null : _capture,
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 150),
-                        opacity: _capturing ? 0.6 : 1,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
-                            shape: BoxShape.circle,
+                ),
+                const SizedBox(height: 16),
+                if (_capturedImagePath == null) ...[
+                  Center(
+                    child: Text(
+                      _cameraLabel(),
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_cameras.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 24),
+                          child: IconButton.filledTonal(
+                            tooltip: 'Switch camera',
+                            onPressed: _switchCamera,
+                            icon: const Icon(Icons.cameraswitch_outlined),
                           ),
-                          padding: const EdgeInsets.all(5),
+                        ),
+                      GestureDetector(
+                        onTap: _capturing ? null : _capture,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 150),
+                          opacity: _capturing ? 0.6 : 1,
                           child: Container(
+                            width: 80,
+                            height: 80,
                             decoration: const BoxDecoration(
-                              color: Colors.white,
+                              color: Colors.black,
                               shape: BoxShape.circle,
                             ),
-                            child: _capturing
-                                ? const Padding(
-                                    padding: EdgeInsets.all(22),
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 3,
-                                    ),
-                                  )
-                                : null,
+                            padding: const EdgeInsets.all(5),
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: _capturing
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(22),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                      ),
+                                    )
+                                  : null,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
