@@ -29,7 +29,7 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-## DOWNLOAD HERE
+## WHERE TO DOWNLOAD
 Compatibility - Android 7 and above confirmed, older versions are unknown
 
-Where to download - [Go here](https://mega.nz/folder/HF0G1SLQ#OUO7eouL38l2masUqADCrw) and download the APK, allow unknown sources, and allow any pop-ups. This app only supports photo capture; audio and video are not required.
+Where to download - [Go here](https://github.com/Audichin/CS337-Imooney/releases) and find the latest version, download just the APK, allow unknown sources, and allow any pop-ups. This app only supports photo capture; audio and video are not required.
