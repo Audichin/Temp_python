@@ -8,6 +8,8 @@ import '../services/binder_database.dart';
 
 import '../utils/page_mapping.dart';
 
+enum _EditConflictAction { cancel, swap }
+
 class EditCardPage extends StatefulWidget {
   final CardModel card;
   final int binderSheetCount;
@@ -141,41 +143,16 @@ class _EditCardPageState extends State<EditCardPage> {
     });
   }
 
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final sheetNumber = int.parse(_sheetController.text.trim());
-    final pageNumber = virtualPageFromSheet(
-      sheetNumber: sheetNumber,
-      side: _selectedSide,
-    );
-    final row = int.parse(_rowController.text.trim());
-    final column = int.parse(_columnController.text.trim());
-
-    setState(() => _saving = true);
-
-    final slotTaken = await BinderDatabase.instance.cardSlotExists(
-      binderId: widget.card.binderId,
-      pageNumber: pageNumber,
-      row: row,
-      column: column,
-      excludeCardId: widget.card.id,
-    );
-
-    if (slotTaken) {
-      if (!mounted) return;
-      setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('That slot already has a card.')),
-      );
-      return;
-    }
-
+  CardModel _buildUpdatedCard({
+    required int pageNumber,
+    required int row,
+    required int column,
+  }) {
     final price = (_forSale && _priceController.text.trim().isNotEmpty)
         ? double.tryParse(_priceController.text.trim())
         : null;
 
-    final updatedCard = CardModel(
+    return CardModel(
       id: widget.card.id,
       binderId: widget.card.binderId,
       name: _nameController.text.trim(),
@@ -215,6 +192,79 @@ class _EditCardPageState extends State<EditCardPage> {
       row: row,
       column: column,
     );
+  }
+
+  Future<_EditConflictAction?> _promptEditConflict(CardModel conflictingCard) {
+    return showDialog<_EditConflictAction>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Spot Already Taken'),
+          content: Text(
+            '"${conflictingCard.name}" is already in that page and slot. '
+            'Would you like to swap spots or cancel?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, _EditConflictAction.cancel),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.pop(context, _EditConflictAction.swap),
+              child: const Text('Swap Spots'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final sheetNumber = int.parse(_sheetController.text.trim());
+    final pageNumber = virtualPageFromSheet(
+      sheetNumber: sheetNumber,
+      side: _selectedSide,
+    );
+    final row = int.parse(_rowController.text.trim());
+    final column = int.parse(_columnController.text.trim());
+    final updatedCard = _buildUpdatedCard(
+      pageNumber: pageNumber,
+      row: row,
+      column: column,
+    );
+
+    setState(() => _saving = true);
+
+    final conflictingCard = await BinderDatabase.instance.getCardBySlot(
+      binderId: widget.card.binderId,
+      pageNumber: pageNumber,
+      row: row,
+      column: column,
+      excludeCardId: widget.card.id,
+    );
+
+    if (conflictingCard != null) {
+      final action = await _promptEditConflict(conflictingCard);
+      if (!mounted) return;
+      switch (action ?? _EditConflictAction.cancel) {
+        case _EditConflictAction.cancel:
+          setState(() => _saving = false);
+          return;
+        case _EditConflictAction.swap:
+          await BinderDatabase.instance.updateCardWithSwap(
+            originalCard: widget.card,
+            updatedCard: updatedCard,
+            conflictingCard: conflictingCard,
+          );
+          if (!mounted) return;
+          Navigator.pop(context, pageNumber);
+          return;
+      }
+    }
 
     await BinderDatabase.instance.updateCard(updatedCard);
 
@@ -454,6 +504,36 @@ class _EditCardPageState extends State<EditCardPage> {
                       }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Side',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<BinderSide>(
+                        segments: const [
+                          ButtonSegment(
+                            value: BinderSide.front,
+                            label: Text('Front'),
+                          ),
+                          ButtonSegment(
+                            value: BinderSide.back,
+                            label: Text('Back'),
+                          ),
+                        ],
+                        selected: {_selectedSide},
+                        onSelectionChanged: (selection) {
+                          setState(() {
+                            _selectedSide = selection.first;
+                          });
+                        },
+                        showSelectedIcon: false,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
 

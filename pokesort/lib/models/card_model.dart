@@ -53,6 +53,53 @@ class CardModel {
     required this.column,
   });
 
+  CardModel copyWith({
+    int? id,
+    int? binderId,
+    String? name,
+    String? imagePath,
+    CardCategory? category,
+    CardLanguage? cardLanguage,
+    CardRarity? rarity,
+    CardType? type,
+    CardStage? stage,
+    PokemonVariant? pokemonVariant,
+    String? customPokemonVariant,
+    TrainerVariant? trainerVariant,
+    ItemStadiumKind? itemStadiumKind,
+    ItemStadiumVariant? itemStadiumVariant,
+    bool? legendary,
+    bool? forSale,
+    double? price,
+    int? pageNumber,
+    int? row,
+    int? column,
+  }) {
+    return CardModel(
+      id: id ?? this.id,
+      binderId: binderId ?? this.binderId,
+      name: name ?? this.name,
+      imagePath: imagePath ?? this.imagePath,
+      category: category ?? this.category,
+      cardLanguage: cardLanguage ?? this.cardLanguage,
+      rarity: rarity ?? this.rarity,
+      type: type ?? this.type,
+      stage: stage ?? this.stage,
+      pokemonVariant: pokemonVariant ?? this.pokemonVariant,
+      customPokemonVariant:
+          customPokemonVariant ?? this.customPokemonVariant,
+      trainerVariant: trainerVariant ?? this.trainerVariant,
+      itemStadiumKind: itemStadiumKind ?? this.itemStadiumKind,
+      itemStadiumVariant: itemStadiumVariant ?? this.itemStadiumVariant,
+      legendary: legendary ?? this.legendary,
+      forSale: forSale ?? this.forSale,
+      price: price ?? this.price,
+      pageNumber: pageNumber ?? this.pageNumber,
+      row: row ?? this.row,
+      column: column ?? this.column,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

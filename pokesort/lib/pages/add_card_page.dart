@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/card_enums.dart';
 import '../models/card_model.dart';
 import '../services/binder_database.dart';
+import '../widgets/card_slot_dialog.dart';
 
 import '../utils/page_mapping.dart';
 
@@ -103,40 +104,16 @@ class _AddCardPageState extends State<AddCardPage> {
     });
   }
 
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final sheetNumber = int.parse(_sheetController.text.trim());
-    final pageNumber = virtualPageFromSheet(
-      sheetNumber: sheetNumber,
-      side: _selectedSide,
-    );
-    final row = int.parse(_rowController.text.trim());
-    final column = int.parse(_columnController.text.trim());
-
-    setState(() => _saving = true);
-
-    final slotTaken = await BinderDatabase.instance.cardSlotExists(
-      binderId: widget.binderId,
-      pageNumber: pageNumber,
-      row: row,
-      column: column,
-    );
-
-    if (slotTaken) {
-      if (!mounted) return;
-      setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('That slot already has a card.')),
-      );
-      return;
-    }
-
+  CardModel _buildDraftCard({
+    required int pageNumber,
+    required int row,
+    required int column,
+  }) {
     final price = (_forSale && _priceController.text.trim().isNotEmpty)
         ? double.tryParse(_priceController.text.trim())
         : null;
 
-    final card = CardModel(
+    return CardModel(
       binderId: widget.binderId,
       name: _nameController.text.trim(),
       imagePath: widget.imagePath,
@@ -175,6 +152,120 @@ class _AddCardPageState extends State<AddCardPage> {
       row: row,
       column: column,
     );
+  }
+
+  Future<bool> _moveExistingCardElseCancel(CardModel conflictingCard) async {
+    final shouldMove = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Spot Already Taken'),
+          content: Text(
+            '"${conflictingCard.name}" is already in that page and slot. '
+            'Would you like to move it to a new page and slot?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Move Current Card'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldMove != true) return false;
+
+    CardSlotSelection? selection;
+    String? warningMessage;
+
+    while (true) {
+      if (!mounted) return false;
+
+      selection = await showDialog<CardSlotSelection>(
+        context: context,
+        builder: (_) => CardSlotDialog(
+          title: 'Move Current Card',
+          description:
+              'Choose a new page and slot for ${conflictingCard.name}.',
+          card: conflictingCard,
+          binderSheetCount: widget.binderSheetCount,
+          initialSelection: selection,
+          warningMessage: warningMessage,
+        ),
+      );
+
+      if (selection == null) return false;
+
+      if (selection.pageNumber == conflictingCard.pageNumber &&
+          selection.row == conflictingCard.row &&
+          selection.column == conflictingCard.column) {
+        warningMessage =
+            'Choose a different page and slot for the current card.';
+        continue;
+      }
+
+      final occupant = await BinderDatabase.instance.getCardBySlot(
+        binderId: conflictingCard.binderId,
+        pageNumber: selection.pageNumber,
+        row: selection.row,
+        column: selection.column,
+        excludeCardId: conflictingCard.id,
+      );
+
+      if (occupant == null) {
+        await BinderDatabase.instance.moveCardToSlot(
+          cardId: conflictingCard.id!,
+          pageNumber: selection.pageNumber,
+          row: selection.row,
+          column: selection.column,
+        );
+        return true;
+      }
+
+      if (!mounted) return false;
+      warningMessage =
+          '"${occupant.name}" is already in that spot. Choose another one.';
+    }
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final sheetNumber = int.parse(_sheetController.text.trim());
+    final pageNumber = virtualPageFromSheet(
+      sheetNumber: sheetNumber,
+      side: _selectedSide,
+    );
+    final row = int.parse(_rowController.text.trim());
+    final column = int.parse(_columnController.text.trim());
+    final card = _buildDraftCard(
+      pageNumber: pageNumber,
+      row: row,
+      column: column,
+    );
+
+    setState(() => _saving = true);
+
+    final conflictingCard = await BinderDatabase.instance.getCardBySlot(
+      binderId: widget.binderId,
+      pageNumber: pageNumber,
+      row: row,
+      column: column,
+    );
+
+    if (conflictingCard != null) {
+      final resolved = await _moveExistingCardElseCancel(conflictingCard);
+      if (!mounted) return;
+      if (!resolved) {
+        setState(() => _saving = false);
+        return;
+      }
+    }
 
     await BinderDatabase.instance.insertCard(card);
 

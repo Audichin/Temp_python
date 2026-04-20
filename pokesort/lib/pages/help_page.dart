@@ -74,8 +74,35 @@ class HelpPage extends StatelessWidget {
                   'Allow camera access if your device prompts you.',
                   'Fill in the card details and save.',
                 ],
-                note:
-                    'If you have an ACE SPEC card, choose "Item/Stadium" and then select "Item". For help identifying card details, open the Pokémon Card Help section.',
+                notes: const [
+                  'If you have an ACE SPEC card, choose "Item/Stadium" and then select "Item".',
+                  'For help identifying card details, open the Pokémon Card Help section.',
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.drive_file_rename_outline),
+              title: const Text('Editing a card'),
+              subtitle: const Text(
+                'Update card details, price, or binder position after a card has been saved.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openSection(
+                context,
+                title: 'Editing a card',
+                steps: const [
+                  'Open a binder and tap the card you want to edit.',
+                  'On the card detail page, tap the edit button in the top-right corner.',
+                  'Update the card information, location, side, or sale details.',
+                  'Tap "Save Changes" when you are finished.',
+                ],
+                notes: const [
+                  'If you try to move the card into a spot that is already taken, the app will let you swap the two cards or cancel and return to the edit screen.',
+                  'Canceling keeps the changes you already typed so you can choose a different location.',
+                ],
               ),
             ),
           ),
@@ -95,6 +122,31 @@ class HelpPage extends StatelessWidget {
                   'Open any binder.',
                   'Tap a card that already has a picture.',
                   'Review the detail page for category, rarity, page placement, and other saved data.',
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.swap_horiz_outlined),
+              title: const Text('Moving cards during add'),
+              subtitle: const Text(
+                'Understand what happens when you add a card into a spot that already has a card.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openSection(
+                context,
+                title: 'Moving cards during add',
+                steps: const [
+                  'Choose the page, side, row, and column for your new card.',
+                  'If another card is already in that spot, the app will ask whether you want to move the current card.',
+                  'If you agree, a "Move Current Card" popup will open so you can choose a new page, side, row, and column for the existing card.',
+                  'After the existing card is moved successfully, your new card will save into the original spot you selected.',
+                ],
+                notes: const [
+                  'If you cancel the move, you will return to the add-card screen with all your entered data still there.',
+                  'If you choose the same location again or another occupied spot, the popup will show a warning and let you try a different location.',
                 ],
               ),
             ),

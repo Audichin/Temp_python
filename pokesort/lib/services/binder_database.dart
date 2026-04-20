@@ -167,4 +167,128 @@ class BinderDatabase {
 
     return maps.isNotEmpty;
   }
+
+  Future<CardModel?> getCardBySlot({
+    required int binderId,
+    required int pageNumber,
+    required int row,
+    required int column,
+    int? excludeCardId,
+  }) async {
+    final db = await database;
+
+    String where = 'binderId = ? AND pageNumber = ? AND row = ? AND column = ?';
+    final whereArgs = <Object?>[binderId, pageNumber, row, column];
+
+    if (excludeCardId != null) {
+      where += ' AND id != ?';
+      whereArgs.add(excludeCardId);
+    }
+
+    final maps = await db.query(
+      'cards',
+      where: where,
+      whereArgs: whereArgs,
+      limit: 1,
+    );
+
+    if (maps.isEmpty) return null;
+    return CardModel.fromMap(maps.first);
+  }
+
+  Future<void> moveCardToSlot({
+    required int cardId,
+    required int pageNumber,
+    required int row,
+    required int column,
+  }) async {
+    final db = await database;
+    await db.update(
+      'cards',
+      {'pageNumber': pageNumber, 'row': row, 'column': column},
+      where: 'id = ?',
+      whereArgs: [cardId],
+      conflictAlgorithm: ConflictAlgorithm.abort,
+    );
+  }
+
+  Future<void> swapCardSlots({
+    required CardModel firstCard,
+    required CardModel secondCard,
+  }) async {
+    final db = await database;
+
+    if (firstCard.id == null || secondCard.id == null) {
+      throw ArgumentError('Both cards must have ids before swapping slots.');
+    }
+
+    await db.transaction((txn) async {
+      await txn.update(
+        'cards',
+        {'pageNumber': 0, 'row': 0, 'column': 0},
+        where: 'id = ?',
+        whereArgs: [firstCard.id],
+      );
+      await txn.update(
+        'cards',
+        {
+          'pageNumber': firstCard.pageNumber,
+          'row': firstCard.row,
+          'column': firstCard.column,
+        },
+        where: 'id = ?',
+        whereArgs: [secondCard.id],
+      );
+      await txn.update(
+        'cards',
+        {
+          'pageNumber': secondCard.pageNumber,
+          'row': secondCard.row,
+          'column': secondCard.column,
+        },
+        where: 'id = ?',
+        whereArgs: [firstCard.id],
+      );
+    });
+  }
+
+  Future<void> updateCardWithSwap({
+    required CardModel originalCard,
+    required CardModel updatedCard,
+    required CardModel conflictingCard,
+  }) async {
+    final db = await database;
+
+    if (originalCard.id == null ||
+        updatedCard.id == null ||
+        conflictingCard.id == null) {
+      throw ArgumentError('All cards must have ids before swapping slots.');
+    }
+
+    await db.transaction((txn) async {
+      await txn.update(
+        'cards',
+        {'pageNumber': 0, 'row': 0, 'column': 0},
+        where: 'id = ?',
+        whereArgs: [updatedCard.id],
+      );
+      await txn.update(
+        'cards',
+        {
+          'pageNumber': originalCard.pageNumber,
+          'row': originalCard.row,
+          'column': originalCard.column,
+        },
+        where: 'id = ?',
+        whereArgs: [conflictingCard.id],
+      );
+      await txn.update(
+        'cards',
+        updatedCard.toMap(),
+        where: 'id = ?',
+        whereArgs: [updatedCard.id],
+        conflictAlgorithm: ConflictAlgorithm.abort,
+      );
+    });
+  }
 }
